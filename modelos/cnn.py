@@ -19,25 +19,7 @@ class CNN:
         criterionCEL = self.create_criterion()
         self.train_model(model, self.train_loader, optimizerSGD, criterionCEL, num_epochs) 
         metrics = self.evaluate_model(model, self.validation_loader)
-        return metrics
-
-    # Método original, deixei para caso seja necessário voltar. / Talvez necessário se precisar das replicações.
-
-    # def create_and_train_cnn(self, model_name, num_epochs, learning_rate, weight_decay, replicacoes):
-    #     soma = 0
-    #     acc_max = 0
-    #     for i in range(0,replicacoes):
-    #         model = self.create_model(model_name)
-    #         optimizerSGD = self.create_optimizer(model,learning_rate, weight_decay)
-    #         criterionCEL = self.create_criterion()
-    #         self.train_model(model, self.train_loader, optimizerSGD, criterionCEL, model_name, num_epochs, learning_rate, weight_decay, i) 
-    #         acc = self.evaluate_model(model, self.validation_loader)
-    #         soma = soma + acc
-    #         if acc > acc_max:
-    #             acc_max = acc
-    #             iter_acc_max = i
-    #     return soma / replicacoes, iter_acc_max
-        
+        return metrics        
     
     def create_model(self, model_name):
         if model_name == 'VGG19':
@@ -76,12 +58,11 @@ class CNN:
     def train_model(self, model, train_loader, optimizer, criterion, num_epochs): 
         model.to(self.device)
         for i in (range(1,num_epochs+1)):
-            print(f"\tTreinando epoca: {i}", end='\r')
+            print(f"\tEpoch: {i}", end='\r')
             self.train_epoch(model, train_loader, optimizer, criterion)
 
 
     #Metodo de treino anterior, comentei por ter modificado e removido a parte onde ele salva o modelo. Posteriormente pode ser usado.
-
     # def train_model(self, model, train_loader, optimizer, criterion, model_name, num_epochs, learning_rate, weight_decay, replicacao): 
     #     model.to(self.device)
     #     min_loss = 100
