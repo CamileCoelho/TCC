@@ -33,5 +33,3 @@ def save_csv(replications, model, epoch, lr, wd, result, path='./results/trainin
             writer.writerow(['Replication No','Model Name', 'Epochs', 'Learning Rate', 'Weight Decay', 'Accuracy', 'Precision', 'Recall', 'F1-Score', 'Fbeta', 'Loss'])
 
         writer.writerow(row)
-
-    print(f"\nOutput: {path}")

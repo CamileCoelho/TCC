@@ -58,8 +58,9 @@ class CNN:
     def train_model(self, model, train_loader, optimizer, criterion, num_epochs): 
         model.to(self.device)
         for i in (range(1,num_epochs+1)):
-            print(f"\tEpoch: {i}", end='\r')
+            print(f"\t[{i}/{num_epochs}] Training Epoch", end='\r')
             self.train_epoch(model, train_loader, optimizer, criterion)
+        print() #Apenas para quebrar a linha no final do treinamento
 
 
     #Metodo de treino anterior, comentei por ter modificado e removido a parte onde ele salva o modelo. Posteriormente pode ser usado.
