@@ -3,7 +3,6 @@ import torch
 from torch import nn, optim
 from torch.utils import data
 from sklearn.metrics import recall_score, f1_score, fbeta_score, precision_score
-from models.inception import build_inception_v3
 from models.mobilenet import build_mobilenet_v2, build_mobilenet_v3_large, build_mobilenet_v3_small
 from models.resnet import build_resnet18, build_resnet50, build_resnet101
 from models.vgg import build_vgg11, build_vgg16, build_vgg19
@@ -25,9 +24,6 @@ class CNN:
         return metrics        
     
     def create_model(self, model_name):
-        if model_name == 'InceptionV3':
-            return build_inception_v3()
-        
         if model_name == 'MobileNetV2':
             return build_mobilenet_v2()
         
@@ -96,17 +92,7 @@ class CNN:
             X = X.to(self.device)
             y = y.to(self.device)
             optimizer.zero_grad()
-            output = model(X)
-
-            # O InceptionV3 pode retornar um objeto especial (InceptionOutputs) que contém múltiplas saídas,
-            # ou uma tupla com as saídas principais e auxiliares.
-            # Aqui verificamos se o retorno tem o atributo 'logits' (caso do InceptionOutputs) ou é uma tupla,
-            # para extrair somente a saída principal necessária para calcular a loss.
-            if isinstance(output, tuple) or hasattr(output, 'logits'):
-                y_pred = output.logits if hasattr(output, 'logits') else output[0]
-            else:
-                y_pred = output
-
+            y_pred = model(X)
             loss = criterion(y_pred, y)
             loss.backward()
             optimizer.step()

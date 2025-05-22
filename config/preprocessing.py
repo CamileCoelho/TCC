@@ -24,7 +24,7 @@ def read_images(data_transforms):
     test_data = datasets.ImageFolder('./data/test/',transform=data_transforms['test'])
     return train_data, validation_data, test_data
 
-def pre_process_data(height, width):
-    data_transforms = define_transforms(height,width)
+def pre_process_data():
+    data_transforms = define_transforms(224,224)
     train_data, validation_data, test_data = read_images(data_transforms)
     return CNN(train_data, validation_data, test_data, 8)
