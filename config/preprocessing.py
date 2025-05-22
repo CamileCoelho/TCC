@@ -1,6 +1,7 @@
 import torch
 from torchvision.transforms import v2
 from torchvision import datasets
+from models.cnn import CNN
 
 def define_transforms(height, width):
     data_transforms = {
@@ -22,3 +23,8 @@ def read_images(data_transforms):
     validation_data = datasets.ImageFolder('./data/dev/',transform=data_transforms['test'])
     test_data = datasets.ImageFolder('./data/test/',transform=data_transforms['test'])
     return train_data, validation_data, test_data
+
+def pre_process_data(height, width):
+    data_transforms = define_transforms(height,width)
+    train_data, validation_data, test_data = read_images(data_transforms)
+    return CNN(train_data, validation_data, test_data, 8)

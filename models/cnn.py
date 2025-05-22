@@ -2,8 +2,11 @@ import numpy as np
 import torch
 from torch import nn, optim
 from torch.utils import data
-from torchvision import models
-from sklearn.metrics import recall_score, f1_score, fbeta_score, classification_report, precision_score
+from sklearn.metrics import recall_score, f1_score, fbeta_score, precision_score
+from models.inception import build_inception_v3
+from models.mobilenet import build_mobilenet_v2, build_mobilenet_v3_large, build_mobilenet_v3_small
+from models.resnet import build_resnet18, build_resnet50, build_resnet101
+from models.vgg import build_vgg11, build_vgg16, build_vgg19
 
 class CNN:
     def __init__(self, train_data, validation_data, test_data, batch_size):
@@ -22,27 +25,37 @@ class CNN:
         return metrics        
     
     def create_model(self, model_name):
-        if model_name == 'VGG19':
-            model = models.vgg19(weights='DEFAULT')
-            for param in model.parameters():
-                param.requires_grad = False
-            model.classifier[6] = nn.Linear(model.classifier[6].in_features, 2)
-            return model
+        if model_name == 'InceptionV3':
+            return build_inception_v3()
         
-        ## Metodo pode ser utilizado para ensembles futuramente, manter estrutura.
-        # elif (model_name=='VGG11'):
-        #     model = models.vgg11(weights='DEFAULT')  
-        #     for param in model.parameters():
-        #         param.requires_grad = False
-        #     model.classifier[6] = nn.Linear(model.classifier[6].in_features,2)
-        #     return model
-        # elif (model_name=='Alexnet'):
-        #     model = models.alexnet(weights='DEFAULT')  
-        #     for param in model.parameters():
-        #         param.requires_grad = False
-        #     model.classifier[6] = nn.Linear(model.classifier[6].in_features,2)
-        #     return model
-   
+        if model_name == 'MobileNetV2':
+            return build_mobilenet_v2()
+        
+        if model_name == 'MobileNetV3Large':
+            return build_mobilenet_v3_large()
+        
+        if model_name == 'MobileNetV3Small':
+            return build_mobilenet_v3_small()
+        
+        if model_name == 'ResNet18':
+            return build_resnet18()
+        
+        if model_name == 'ResNet50':
+            return build_resnet50()
+        
+        if model_name == 'ResNet101':
+            return build_resnet101()
+        
+        if model_name == 'VGG11':
+            return build_vgg11()
+        
+        if model_name == 'VGG16':
+            return build_vgg16()
+        
+        if model_name == 'VGG19':
+            return build_vgg19()
+
+
     def create_optimizer(self, model, learning_rate, weight_decay):
         update = []
         for name,param in model.named_parameters():
@@ -83,7 +96,17 @@ class CNN:
             X = X.to(self.device)
             y = y.to(self.device)
             optimizer.zero_grad()
-            y_pred = model(X)
+            output = model(X)
+
+            # O InceptionV3 pode retornar um objeto especial (InceptionOutputs) que contém múltiplas saídas,
+            # ou uma tupla com as saídas principais e auxiliares.
+            # Aqui verificamos se o retorno tem o atributo 'logits' (caso do InceptionOutputs) ou é uma tupla,
+            # para extrair somente a saída principal necessária para calcular a loss.
+            if isinstance(output, tuple) or hasattr(output, 'logits'):
+                y_pred = output.logits if hasattr(output, 'logits') else output[0]
+            else:
+                y_pred = output
+
             loss = criterion(y_pred, y)
             loss.backward()
             optimizer.step()

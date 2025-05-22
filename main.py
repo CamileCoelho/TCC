@@ -1,14 +1,14 @@
 
 import itertools
-from modelos.cnn import CNN
-from config.preprocessing import define_transforms, read_images
+from models.cnn import CNN
+from config.preprocessing import pre_process_data
 from config.output import save_csv
 from config.params_loader import load_parameters
 
+
 if __name__ == '__main__':
-    data_transforms = define_transforms(224,224)
-    train_data, validation_data, test_data = read_images(data_transforms)
-    cnn = CNN(train_data, validation_data, test_data,8)
+    # Carrega os dados e pré-processa com tamanho 244x244
+    cnn = pre_process_data(244,244)
 
     # Carrega os parâmetros do arquivo params.txt
     params = load_parameters('params.txt')
@@ -24,6 +24,10 @@ if __name__ == '__main__':
     combinations = list(itertools.product(model_names, epochs, learning_rates, weight_decays))
 
     for model, epoch, lr, wd in combinations:
+        if(model == 'InceptionV3'):
+            # InceptionV3 exige tamanho de entrada 299x299
+            cnn = pre_process_data(299,299)
+            
         for i in range(1, replications+1):
 
             print(f"\n>>> Replication {i} | Model: {model} | Epochs: {epoch} | LR: {lr} | WD: {wd}")
