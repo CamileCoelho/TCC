@@ -31,5 +31,5 @@ if __name__ == '__main__':
 
             result = cnn.create_and_train_cnn(model, epoch, lr, wd)
 
-            save_csv(replications, model=model, epoch=epoch, lr=lr, wd=wd, result=result)
+            save_csv(i, model=model, epoch=epoch, lr=lr, wd=wd, result=result)
         
