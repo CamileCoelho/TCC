@@ -1,5 +1,5 @@
 replications=10
-model_names=VGG19
+model_names=AlexNet,EfficientNetB0,EfficientNetB1,EfficientNetB2,EfficientNetB3,EfficientNetB4,EfficientNetB5,EfficientNetB6,EfficientNetB7,DenseNet121,DenseNet161,DenseNet169,DenseNet201
 epochs=50
 learning_rates=0.0001
 weight_decays=0.01
