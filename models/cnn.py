@@ -2,10 +2,30 @@ import numpy as np
 import torch
 from torch import nn, optim
 from torch.utils import data
-from sklearn.metrics import recall_score, f1_score, fbeta_score, precision_score
-from models.mobilenet import build_mobilenet_v2, build_mobilenet_v3_large, build_mobilenet_v3_small
-from models.resnet import build_resnet18, build_resnet50, build_resnet101
-from models.vgg import build_vgg11, build_vgg16, build_vgg19
+
+from sklearn.metrics import (
+    recall_score, f1_score, fbeta_score, precision_score
+)
+
+from models.alexnet import build_alexnet
+from models.mobilenet import (
+    build_mobilenet_v2, build_mobilenet_v3_large, build_mobilenet_v3_small
+)
+from models.resnet import (
+    build_resnet18, build_resnet50, build_resnet101
+)
+from models.vgg import (
+    build_vgg11, build_vgg16, build_vgg19
+)
+from models.efficientnet import (
+    build_efficientnet_b0, build_efficientnet_b1, build_efficientnet_b2,
+    build_efficientnet_b3, build_efficientnet_b4, build_efficientnet_b5,
+    build_efficientnet_b6, build_efficientnet_b7
+)
+from models.densenet import (
+    build_densenet121, build_densenet161, build_densenet169, build_densenet201
+)
+
 
 class CNN:
     def __init__(self, train_data, validation_data, test_data, batch_size):
@@ -13,7 +33,6 @@ class CNN:
         self.validation_loader = data.DataLoader(validation_data, batch_size=batch_size, shuffle=False)
         self.test_loader = data.DataLoader(test_data, batch_size=batch_size, shuffle=False)
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
 
     def create_and_train_cnn(self, model_name, num_epochs, learning_rate, weight_decay):        
         model = self.create_model(model_name)
@@ -50,7 +69,45 @@ class CNN:
         
         if model_name == 'VGG19':
             return build_vgg19()
-
+        
+        if model_name == 'AlexNet':
+            return build_alexnet()
+        
+        if model_name == 'EfficientNetB0':
+            return build_efficientnet_b0()
+        
+        if model_name == 'EfficientNetB1':
+            return build_efficientnet_b1()
+        
+        if model_name == 'EfficientNetB2':
+            return build_efficientnet_b2()
+        
+        if model_name == 'EfficientNetB3':
+            return build_efficientnet_b3()
+        
+        if model_name == 'EfficientNetB4':
+            return build_efficientnet_b4()
+        
+        if model_name == 'EfficientNetB5':
+            return build_efficientnet_b5()
+        
+        if model_name == 'EfficientNetB6':
+            return build_efficientnet_b6()
+        
+        if model_name == 'EfficientNetB7':
+            return build_efficientnet_b7()
+        
+        if model_name == 'DenseNet121':
+            return build_densenet121()
+        
+        if model_name == 'DenseNet161':
+            return build_densenet161()
+        
+        if model_name == 'DenseNet169':
+            return build_densenet169()
+        
+        if model_name == 'DenseNet201':
+            return build_densenet201()
 
     def create_optimizer(self, model, learning_rate, weight_decay):
         update = []
