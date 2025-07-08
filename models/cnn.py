@@ -33,10 +33,10 @@ class CNN:
         self.validation_loader = data.DataLoader(validation_data, batch_size=batch_size, shuffle=False)
         self.test_loader = data.DataLoader(test_data, batch_size=batch_size, shuffle=False)
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
+        
     def create_and_train_cnn(self, model_name, num_epochs, learning_rate, weight_decay):        
         model = self.create_model(model_name)
-        optimizerSGD = self.create_optimizer(model,learning_rate, weight_decay)
+        optimizerSGD = self.create_optimizer(model, learning_rate, weight_decay)
         criterionCEL = self.create_criterion()
         self.train_model(model, self.train_loader, optimizerSGD, criterionCEL, num_epochs) 
         metrics = self.evaluate_model(model, self.validation_loader)
@@ -122,25 +122,28 @@ class CNN:
         return criterionCEL
 
     def train_model(self, model, train_loader, optimizer, criterion, num_epochs): 
+        from config.early_stopping import EarlyStopping
+        
         model.to(self.device)
-        for i in (range(1,num_epochs+1)):
-            print(f"\t[{i}/{num_epochs}] Training Epoch", end='\r')
-            self.train_epoch(model, train_loader, optimizer, criterion)
-        print() #Apenas para quebrar a linha no final do treinamento
-
-
-    #Metodo de treino anterior, comentei por ter modificado e removido a parte onde ele salva o modelo. Posteriormente pode ser usado.
-    # def train_model(self, model, train_loader, optimizer, criterion, model_name, num_epochs, learning_rate, weight_decay, replicacao): 
-    #     model.to(self.device)
-    #     min_loss = 100
-    #     e_measures = []
-    #     for i in (range(1,num_epochs+1)):
-    #         train_loss = self.train_epoch(model, train_loader, optimizer, criterion)
-
-    #         if (train_loss < min_loss):
-    #             min_loss = train_loss
-    #             nome_arquivo = f"./modelos/{model_name}_{num_epochs}_{learning_rate}_{weight_decay}_{replicacao}.pth"
-    #             torch.save(model.state_dict(), nome_arquivo)
+        
+        # Early Stopping sempre ativado por padrão
+        early_stopping = EarlyStopping(patience=10, min_delta=0.001, verbose=True)
+        
+        for i in range(1, num_epochs + 1):
+            # Treina uma época
+            train_loss = self.train_epoch(model, train_loader, optimizer, criterion)
+            
+            # Avalia no conjunto de validação
+            val_metrics = self.evaluate_model(model, self.validation_loader)
+            val_loss = val_metrics['loss']
+            val_acc = val_metrics['accuracy']
+            
+            print(f"\t[{i}/{num_epochs}] Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.4f}")
+            
+            # Verifica Early Stopping
+            if early_stopping(val_loss, i):
+                print(f"\t  Treinamento parado na época {i} (Early Stopping)")
+                break
 
     def train_epoch(self,model, trainLoader, optimizer, criterion):
         model.train()
