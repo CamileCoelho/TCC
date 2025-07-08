@@ -38,8 +38,13 @@ class CNN:
         model = self.create_model(model_name)
         optimizerSGD = self.create_optimizer(model, learning_rate, weight_decay)
         criterionCEL = self.create_criterion()
-        self.train_model(model, self.train_loader, optimizerSGD, criterionCEL, num_epochs) 
+        
+        actual_epochs = self.train_model(model, self.train_loader, optimizerSGD, criterionCEL, num_epochs) 
+
         metrics = self.evaluate_model(model, self.validation_loader)
+
+        metrics['actual_epochs'] = actual_epochs
+
         return metrics        
     
     def create_model(self, model_name):
@@ -143,7 +148,9 @@ class CNN:
             # Verifica Early Stopping
             if early_stopping(val_loss, i):
                 print(f"\t  Treinamento parado na época {i} (Early Stopping)")
-                break
+                return i
+            
+        return num_epochs
 
     def train_epoch(self,model, trainLoader, optimizer, criterion):
         model.train()
@@ -195,5 +202,3 @@ class CNN:
             "fbeta": fbeta,
             "loss": avg_loss
         }
-
-

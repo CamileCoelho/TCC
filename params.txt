@@ -1,5 +1,5 @@
-replications=10
-model_names=VGG19
+replications=5
+model_names=MobileNetV2
 epochs=50
 learning_rates=0.001
 weight_decays=0

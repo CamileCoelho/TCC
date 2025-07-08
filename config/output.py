@@ -6,7 +6,7 @@ def format_value(value):
         return f"{value:.6f}".replace('.', ',')
     return value
 
-def save_csv(replications, model, epoch, lr, wd, result, path='./results/training_result.csv'):
+def save_csv(replications, model, total_epochs, actual_epochs, lr, wd, result, path='./results/training_result.csv'):
 
     #Separa o resultado em campos e os formata.
     
@@ -19,7 +19,7 @@ def save_csv(replications, model, epoch, lr, wd, result, path='./results/trainin
     lr = format_value(lr)
     wd = format_value(wd)
 
-    row = [replications, model, epoch, lr, wd, accuracy, precision, recall, f1_score, f_beta, loss]
+    row = [replications, model, total_epochs, actual_epochs, lr, wd, accuracy, precision, recall, f1_score, f_beta, loss]
 
     # Cria o diretório caso não exista.
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -30,6 +30,6 @@ def save_csv(replications, model, epoch, lr, wd, result, path='./results/trainin
 
         # Se o arquivo estiver vazio, escreve o cabeçalho
         if file.tell() == 0:
-            writer.writerow(['Replication No','Model Name', 'Epochs', 'Learning Rate', 'Weight Decay', 'Accuracy', 'Precision', 'Recall', 'F1-Score', 'Fbeta', 'Loss'])
+            writer.writerow(['Replication No','Model Name', 'Total Epochs', 'Stopped at Epoch', 'Learning Rate', 'Weight Decay', 'Accuracy', 'Precision', 'Recall', 'F1-Score', 'Fbeta', 'Loss'])
 
         writer.writerow(row)

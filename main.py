@@ -52,7 +52,9 @@ if __name__ == '__main__':
 
             result = cnn.create_and_train_cnn(model, epoch, lr, wd)
 
-            save_csv(i, model=model, epoch=epoch, lr=lr, wd=wd, result=result)
+            actual_epochs = result['actual_epochs']
+
+            save_csv(i, model=model, total_epochs=epoch, actual_epochs=actual_epochs, lr=lr, wd=wd, result=result)
             
             print(f"    ✅ Accuracy: {result['accuracy']:.4f} | F1: {result['f1']:.4f}")
     
