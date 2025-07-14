@@ -29,9 +29,9 @@ from models.densenet import (
 
 class CNN:
     def __init__(self, train_data, validation_data, test_data, batch_size):
-        self.train_loader = data.DataLoader(train_data, batch_size=batch_size, shuffle=True)
-        self.validation_loader = data.DataLoader(validation_data, batch_size=batch_size, shuffle=False)
-        self.test_loader = data.DataLoader(test_data, batch_size=batch_size, shuffle=False)
+        self.train_loader = data.DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
+        self.validation_loader = data.DataLoader(validation_data, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
+        self.test_loader = data.DataLoader(test_data, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         
     def create_and_train_cnn(self, model_name, num_epochs, learning_rate, weight_decay):        

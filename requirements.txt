@@ -1,12 +1,14 @@
 # Permite buscar pacotes extras do repositório da PyTorch (Necessário para o CUDA)
 --extra-index-url https://download.pytorch.org/whl/cu118
 
-PyTorch com CUDA 11.8
+#PyTorch com CUDA 11.8
 torch==2.2.2+cu118
 torchvision==0.17.2+cu118
 torchaudio==2.2.2+cu118
 scikit-learn==1.4.2
 numpy==1.26.4
+pandas
+joblib
 
 # Camile:
 
