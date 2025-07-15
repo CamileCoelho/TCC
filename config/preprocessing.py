@@ -27,13 +27,16 @@ def read_images(data_transforms):
 def pre_process_data():
     data_transforms = define_transforms(224,224)
     train_data, validation_data, test_data = read_images(data_transforms)
+    num_workers = 4  # Número de workers para DataLoader / Ajuste conforme os núcleos do processador
     
-    # Batch size otimizado baseado no dispositivo
+    # Batch size / pin_memory otimizado baseado no dispositivo
     if torch.cuda.is_available():
         batch_size = 16  # GPU pode usar batch maior
+        pin_memory = True # Melhora a performance na GPU
         print(f"📦 Batch size para GPU: {batch_size}")
     else:
         batch_size = 8   # CPU usa batch menor
+        pin_memory = False # Desnecessário na CPU
         print(f"📦 Batch size para CPU: {batch_size}")
-    
-    return CNN(train_data, validation_data, test_data, batch_size)
+
+    return CNN(train_data, validation_data, test_data, batch_size, num_workers, pin_memory)
