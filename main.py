@@ -68,4 +68,4 @@ if __name__ == '__main__':
     print(f"📊 Experimentos executados: {experiment_count}")
     print(f"💾 Resultados salvos em: ./results/training_result.csv")
     if save_model:
-        print(f"💾 Modelo salvo em: ./trained_models/{model}.pth")
+        print(f"💾 Modelos salvos em: ./trained_models/")
