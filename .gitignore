@@ -178,3 +178,6 @@ pyrightconfig.json
 *.JPG
 *.csv
 *.jpeg
+
+# Ignorar modelos treinados
+*.pth

@@ -5,7 +5,8 @@ def load_parameters(filename):
         'model_names': str,
         'epochs': int,
         'learning_rates': float,
-        'weight_decays': float
+        'weight_decays': float,
+        'saveModel': lambda x: x.lower() == 'true'  # converte string para booleano
     }
 
     # Define quais parâmetros são listas

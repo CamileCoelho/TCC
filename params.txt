@@ -1,5 +1,6 @@
-replications=10
-model_names=
-epochs=50
+replications=1
+model_names=VGG19
+epochs=100
 learning_rates=0.001
 weight_decays=0
+saveModel=true

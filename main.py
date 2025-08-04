@@ -22,6 +22,7 @@ if __name__ == '__main__':
     epochs = params['epochs']
     learning_rates = params['learning_rates']
     weight_decays = params['weight_decays']
+    save_model = params['saveModel']
 
     print(f"🚀 Configuração do experimento:")
     print(f"   Replicações: {replications}")
@@ -30,6 +31,7 @@ if __name__ == '__main__':
     print(f"   Learning Rates: {learning_rates}")
     print(f"   Weight Decays: {weight_decays}")
     print(f"   Early Stopping: Ativado (padrão)")
+    print(f"   Salvar Modelo: {'Sim' if save_model else 'Não'}")
 
     # Gera todas as combinações possíveis de parâmetros
     combinations = list(itertools.product(model_names, epochs, learning_rates, weight_decays))
@@ -50,7 +52,7 @@ if __name__ == '__main__':
             print(f"\n>>> Replication {i}/{replications} | Progresso geral: {experiment_count}/{total_experiments} ({100*experiment_count/total_experiments:.1f}%)")
             print(f"    Model: {model} | Epochs: {epoch} | LR: {lr} | WD: {wd}")
 
-            result = cnn.create_and_train_cnn(model, epoch, lr, wd)
+            result = cnn.create_and_train_cnn(model, epoch, lr, wd, save_model)
 
             actual_epochs = result['actual_epochs']
 
@@ -65,4 +67,5 @@ if __name__ == '__main__':
     print(f"⏱️ Tempo total: {total_time/3600:.2f} horas")
     print(f"📊 Experimentos executados: {experiment_count}")
     print(f"💾 Resultados salvos em: ./results/training_result.csv")
-        
+    if save_model:
+        print(f"💾 Modelo salvo em: ./trained_models/{model}.pth")
