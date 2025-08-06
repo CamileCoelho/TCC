@@ -180,4 +180,4 @@ pyrightconfig.json
 *.jpeg
 
 # Ignorar modelos treinados
-*.pth
+# *.pths
