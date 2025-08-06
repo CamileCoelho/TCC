@@ -1,41 +1,23 @@
 def load_parameters(filename):
-    # Define o tipo esperado por parâmetro
-    param_types = {
-        'replications': int,
-        'model_names': str,
-        'epochs': int,
-        'learning_rates': float,
-        'weight_decays': float,
-        'saveModel': lambda x: x.lower() == 'true'  # converte string para booleano
-    }
-
-    # Define quais parâmetros são listas
-    list_params = {'model_names', 'epochs', 'learning_rates', 'weight_decays'}
-
     params = {}
-
-    with open(filename, 'r') as f:
-        for line in f:
-            # ignora linhas malformadas
-            if '=' not in line:
-                continue 
-            
-            # separa o parâmetro e o valor
-            key, value = line.strip().split('=', 1)
-
-            # Verifica se o parâmetro é conhecido
-            if key not in param_types:
-                raise ValueError(f"Parâmetro desconhecido: {key}")
-
-            # obtém o tipo esperado para o parâmetro
-            value_type = param_types[key]
-
-            if key in list_params:
-                # separa os valores por vírgula e aplica o tipo a cada um deles
-                raw_values = [v.strip() for v in value.split(',')]
-                params[key] = [value_type(v) for v in raw_values]
-            else:
-                # converte o valor único para o tipo apropriado
-                params[key] = value_type(value.strip())
-
+    
+    with open(filename, 'r') as file:
+        for line in file:
+            line = line.strip()
+            if line and not line.startswith('#') and not line.startswith('//'):
+                key, value = line.split('=', 1)
+                key = key.strip()
+                value = value.strip()
+                
+                if key == 'replications' or key == 'epochs':
+                    params[key] = int(value)
+                elif key == 'model_names':
+                    params[key] = [name.strip() for name in value.split(',')]
+                elif key == 'learning_rates' or key == 'weight_decays':
+                    params[key] = [float(lr) for lr in value.split(',')]
+                elif key == 'save_model' or key == 'use_trained_model':
+                    params[key] = value.lower() == 'true'
+                else:
+                    params[key] = value
+    
     return params

@@ -1,6 +1,7 @@
 replications=1
-model_names=MobileNetV2,MobileNetV3Large,MobileNetV3Small,ResNet18,ResNet50,ResNet101,VGG11,VGG16,VGG19,AlexNet,EfficientNetB0,EfficientNetB1,EfficientNetB2,EfficientNetB3,EfficientNetB4,EfficientNetB5,EfficientNetB6,EfficientNetB7,DenseNet121,DenseNet161,DenseNet169,DenseNet201
+model_names=AlexNet,EfficientNetB0
 epochs=100
 learning_rates=0.001
 weight_decays=0
-saveModel=true
+save_model=true
+use_trained_model=true
