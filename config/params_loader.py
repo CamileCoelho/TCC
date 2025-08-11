@@ -9,8 +9,10 @@ def load_parameters(filename):
                 key = key.strip()
                 value = value.strip()
                 
-                if key == 'replications' or key == 'epochs':
+                if key == 'replications':
                     params[key] = int(value)
+                elif key == 'epochs':
+                    params[key] = [int(v) for v in value.split(',')]
                 elif key == 'model_names':
                     params[key] = [name.strip() for name in value.split(',')]
                 elif key == 'learning_rates' or key == 'weight_decays':
