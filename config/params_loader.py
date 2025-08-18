@@ -1,3 +1,5 @@
+from config.data_augmentation import parse_data_augmentation_config
+
 def load_parameters(filename):
     params = {}
     
@@ -19,7 +21,20 @@ def load_parameters(filename):
                     params[key] = [float(lr) for lr in value.split(',')]
                 elif key == 'save_model' or key == 'use_trained_model':
                     params[key] = value.lower() == 'true'
+                elif key == 'data_augmentation_configs':
+                    if value.lower() == 'none' or not value:
+                        params[key] = [{}]
+                    else:
+                        config_strings = value.split('|')
+                        configs = []
+                        for config_str in config_strings:
+                            config_dict = parse_data_augmentation_config(config_str.strip())
+                            configs.append(config_dict)
+                        params[key] = configs
                 else:
                     params[key] = value
+    
+    if 'data_augmentation_configs' not in params:
+        params['data_augmentation_configs'] = [{}]
     
     return params

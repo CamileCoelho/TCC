@@ -18,8 +18,9 @@ def save_csv(replications, model, total_epochs, actual_epochs, lr, wd, result, p
     loss = format_value(result['loss'])
     lr = format_value(lr)
     wd = format_value(wd)
+    da_config = result.get('da_config', 'none')
 
-    row = [replications, model, total_epochs, actual_epochs, lr, wd, accuracy, precision, recall, f1_score, f_beta, loss]
+    row = [replications, model, total_epochs, actual_epochs, lr, wd, da_config, accuracy, precision, recall, f1_score, f_beta, loss]
 
     # Cria o diretório caso não exista.
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -30,6 +31,6 @@ def save_csv(replications, model, total_epochs, actual_epochs, lr, wd, result, p
 
         # Se o arquivo estiver vazio, escreve o cabeçalho
         if file.tell() == 0:
-            writer.writerow(['Replication No','Model Name', 'Total Epochs', 'Stopped at Epoch', 'Learning Rate', 'Weight Decay', 'Accuracy', 'Precision', 'Recall', 'F1-Score', 'Fbeta', 'Loss'])
+            writer.writerow(['Replication No','Model Name', 'Total Epochs', 'Stopped at Epoch', 'Learning Rate', 'Weight Decay', 'Data Augmentation', 'Accuracy', 'Precision', 'Recall', 'F1-Score', 'Fbeta', 'Loss'])
 
         writer.writerow(row)

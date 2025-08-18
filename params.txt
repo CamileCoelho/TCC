@@ -1,7 +1,8 @@
 replications=1
-model_names=AlexNet,EfficientNetB1
-epochs=100
+model_names=AlexNet
+epochs=50
 learning_rates=0.001
 weight_decays=0
-save_model=true
+save_model=false
 use_trained_model=false
+data_augmentation_configs=random_horizontal_flip|random_horizontal_flip;random_rotation:degrees=15|random_horizontal_flip;random_rotation:degrees=15;color_jitter:brightness=0.3,contrast=0.3

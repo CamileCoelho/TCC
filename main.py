@@ -8,9 +8,6 @@ from config.params_loader import load_parameters
 
 if __name__ == '__main__':
     start_time = time.time()
-    
-    # Carrega os dados e pré-processa com tamanho 224x224
-    cnn = pre_process_data()
 
     # Carrega os parâmetros do arquivo params.txt
     params = load_parameters('params.txt')
@@ -23,6 +20,7 @@ if __name__ == '__main__':
     weight_decays = params['weight_decays']
     save_model = params['save_model']
     use_trained_model = params.get('use_trained_model', False)
+    da_configs = params['data_augmentation_configs']
     
     # Verifica se deve usar modelos treinados ou treinar novos
     if use_trained_model:
@@ -30,6 +28,9 @@ if __name__ == '__main__':
         print(f"🎯 Modelos para avaliar: {model_names}")
         print(f"📂 Procurando por arquivos .pth em: ./trained_models/")
         print("="*60)
+        
+        # Para avaliação, usa configuração básica (sem data augmentation)
+        cnn = pre_process_data()
         
         # Importa e cria avaliador de modelos
         from model_evaluation import ModelEvaluator
@@ -59,11 +60,12 @@ if __name__ == '__main__':
         print(f"   Épocas máximas: {epochs}")
         print(f"   Learning Rates: {learning_rates}")
         print(f"   Weight Decays: {weight_decays}")
+        print(f"   Configurações de Data Aug.: {len(da_configs)}")
         print(f"   Early Stopping: Ativado (padrão)")
         print(f"   Salvar Modelo: {'Sim' if save_model else 'Não'}")
 
-        # Gera todas as combinações possíveis de parâmetros
-        combinations = list(itertools.product(model_names, epochs, learning_rates, weight_decays))
+        # Gera todas as combinações possíveis de parâmetros (incluindo data augmentation)
+        combinations = list(itertools.product(model_names, epochs, learning_rates, weight_decays, da_configs))
         total_experiments = len(combinations) * replications
         
         print(f"\n📋 Total de experimentos: {total_experiments}")
@@ -72,18 +74,28 @@ if __name__ == '__main__':
         
         experiment_count = 0
 
-        for combo_idx, (model, epoch, lr, wd) in enumerate(combinations, 1):
+        for combo_idx, (model, epoch, lr, wd, da_config) in enumerate(combinations, 1):
+            # Cria um identificador para a configuração de data augmentation
+            da_id = "none" if not da_config else f"da_{combo_idx}"
+            
             print(f"\n🎯 Combinação {combo_idx}/{len(combinations)}: {model}")
+            print(f"   Data Augmentation: {da_id}")
+            
+            # Cria o CNN com a configuração específica de data augmentation
+            cnn = pre_process_data(da_config)
             
             for i in range(1, replications+1):
                 experiment_count += 1
                 
                 print(f"\n>>> Replication {i}/{replications} | Progresso geral: {experiment_count}/{total_experiments} ({100*experiment_count/total_experiments:.1f}%)")
-                print(f"    Model: {model} | Epochs: {epoch} | LR: {lr} | WD: {wd}")
+                print(f"    Model: {model} | Epochs: {epoch} | LR: {lr} | WD: {wd} | DA: {da_id}")
 
                 result = cnn.create_and_train_cnn(model, epoch, lr, wd, save_model)
 
                 actual_epochs = result['actual_epochs']
+                
+                # Adiciona informação sobre data augmentation ao resultado
+                result['da_config'] = da_id
 
                 save_csv(i, model=model, total_epochs=epoch, actual_epochs=actual_epochs, lr=lr, wd=wd, result=result)
                 
