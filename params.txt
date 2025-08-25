@@ -1,4 +1,4 @@
-replications=10
+replications=3
 model_names=AlexNet,ResNet18,DenseNet121,DenseNet161
 epochs=50
 learning_rates=0.001
