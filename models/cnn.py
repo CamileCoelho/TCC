@@ -34,12 +34,12 @@ class CNN:
         self.test_loader = data.DataLoader(test_data, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=pin_memory)
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         
-    def create_and_train_cnn(self, model_name, num_epochs, learning_rate, weight_decay, save_model):        
+    def create_and_train_cnn(self, model_name, num_epochs, learning_rate, weight_decay, save_model, replication):        
         model = self.create_model(model_name)
         optimizerSGD = self.create_optimizer(model, learning_rate, weight_decay)
         criterionCEL = self.create_criterion()
         
-        actual_epochs = self.train_model(model, self.train_loader, optimizerSGD, criterionCEL, num_epochs, model_name, save_model) 
+        actual_epochs = self.train_model(model, self.train_loader, optimizerSGD, criterionCEL, num_epochs, model_name, save_model, replication) 
 
         metrics = self.evaluate_model(model, self.validation_loader)
 
@@ -126,13 +126,13 @@ class CNN:
         criterionCEL = nn.CrossEntropyLoss()
         return criterionCEL
 
-    def train_model(self, model, train_loader, optimizer, criterion, num_epochs, model_name, save_model): 
+    def train_model(self, model, train_loader, optimizer, criterion, num_epochs, model_name, save_model, replication): 
         from config.early_stopping import EarlyStopping
         
         model.to(self.device)
 
         # Early Stopping sempre ativado por padrão
-        early_stopping = EarlyStopping(patience=10, min_delta=0.001, verbose=True, model_name=model_name, should_save=save_model)
+        early_stopping = EarlyStopping(patience=10, min_delta=0.001, verbose=True, model_name=model_name, should_save=save_model, replication=replication)
         
         for i in range(1, num_epochs + 1):
             # Treina uma época

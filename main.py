@@ -90,7 +90,7 @@ if __name__ == '__main__':
                 print(f"\n>>> Replication {i}/{replications} | Progresso geral: {experiment_count}/{total_experiments} ({100*experiment_count/total_experiments:.1f}%)")
                 print(f"    Model: {model} | Epochs: {epoch} | LR: {lr} | WD: {wd} | DA: {da_name}")
 
-                result = cnn.create_and_train_cnn(model, epoch, lr, wd, save_model)
+                result = cnn.create_and_train_cnn(model, epoch, lr, wd, save_model, replication=i)
 
                 actual_epochs = result['actual_epochs']
                 
