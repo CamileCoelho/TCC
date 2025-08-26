@@ -29,6 +29,7 @@ def load_parameters(filename):
                         configs = []
                         for config_str in config_strings:
                             config_dict = parse_data_augmentation_config(config_str.strip())
+                            config_dict['_original_string'] = config_str.strip()
                             configs.append(config_dict)
                         params[key] = configs
                 else:

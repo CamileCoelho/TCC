@@ -76,10 +76,10 @@ if __name__ == '__main__':
 
         for combo_idx, (model, epoch, lr, wd, da_config) in enumerate(combinations, 1):
             # Cria um identificador para a configuração de data augmentation
-            da_id = "none" if not da_config else f"da_{combo_idx}"
+            da_name = "none" if not da_config else da_config.get('_original_string', f"da_{combo_idx}")
             
             print(f"\n🎯 Combinação {combo_idx}/{len(combinations)}: {model}")
-            print(f"   Data Augmentation: {da_id}")
+            print(f"   Data Augmentation: {da_name}")
             
             # Cria o CNN com a configuração específica de data augmentation
             cnn = pre_process_data(da_config)
@@ -88,14 +88,14 @@ if __name__ == '__main__':
                 experiment_count += 1
                 
                 print(f"\n>>> Replication {i}/{replications} | Progresso geral: {experiment_count}/{total_experiments} ({100*experiment_count/total_experiments:.1f}%)")
-                print(f"    Model: {model} | Epochs: {epoch} | LR: {lr} | WD: {wd} | DA: {da_id}")
+                print(f"    Model: {model} | Epochs: {epoch} | LR: {lr} | WD: {wd} | DA: {da_name}")
 
                 result = cnn.create_and_train_cnn(model, epoch, lr, wd, save_model)
 
                 actual_epochs = result['actual_epochs']
                 
                 # Adiciona informação sobre data augmentation ao resultado
-                result['da_config'] = da_id
+                result['da_config'] = da_name
 
                 save_csv(i, model=model, total_epochs=epoch, actual_epochs=actual_epochs, lr=lr, wd=wd, result=result)
                 
