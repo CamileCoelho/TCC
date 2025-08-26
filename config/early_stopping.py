@@ -4,8 +4,8 @@ import numpy as np
 
 class EarlyStopping:
     """Early stopping para parar o treinamento quando a validação para de melhorar"""
-    
-    def __init__(self, patience=7, min_delta=0.001, verbose=True, model_name="", should_save=False, replication=-1):
+
+    def __init__(self, patience=7, min_delta=0.001, verbose=True, model_name="", should_save=False, replication=-1, da_name=""):
         """
         Args:
             patience (int): Quantas épocas esperar após a última melhoria
@@ -23,10 +23,11 @@ class EarlyStopping:
         self.stopped_epoch = 0
         self.should_save = should_save
         self.replication = "" if replication == -1 else replication
+        self.da_name = da_name
 
         # Checa se deve salvar o modelo e cria o diretório caso não exista .
         if should_save:
-            path = "./trained_models/" + model_name +"_Replication-"+ str(replication) + ".pth"
+            path = "./trained_models/" + model_name +"_Replication-"+ str(self.replication) + "_" + self.da_name + ".pth"
             os.makedirs(os.path.dirname(path), exist_ok=True)
             self.path = path
 
