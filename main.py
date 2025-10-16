@@ -38,10 +38,10 @@ if __name__ == '__main__':
         validation_dataset = cnn.validation_loader.dataset
         evaluator = ModelEvaluator(validation_dataset, batch_size=8)
         
-        # Avalia todos os modelos especificados no params
-        evaluator.evaluate_multiple_models(
-            model_names=model_names,
-            output_file="./results/trained_models_evaluation.csv"
+        evaluator.evaluate_all_replications(
+            max_replications=10,
+            models_dir="./trained_models",
+            output_prefix="./results/trained_models_evaluation"
         )
         
         # Estatísticas finais

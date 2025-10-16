@@ -1,5 +1,7 @@
 import os
+import re
 import torch
+import glob
 import pandas as pd
 from torch.utils.data import DataLoader
 from models.cnn import CNN
@@ -231,6 +233,7 @@ class ModelEvaluator:
                 })
 
         print(f"✅ Análise concluída para {model_name}: {len(image_results)} imagens")
+        print(f"\n\n")
 
         return image_results
 
@@ -328,3 +331,70 @@ class ModelEvaluator:
 
         for i, (model, acc) in enumerate(ranking, 1):
             print(f"   {i}º {model}: {acc:.4f} ({acc*100:.2f}%)")
+        
+    def find_models_by_replication(self, replication_number, models_dir="./trained_models"):
+        """
+        Busca todos os arquivos .pth de uma replicação específica.
+        Retorna um dicionário: {nome_modelo: caminho_arquivo}
+        """
+        pattern = os.path.join(models_dir, f"*Replication-{replication_number}*.pth")
+        files = glob.glob(pattern)
+        model_dict = {}
+        regex = re.compile(r"(.+)_Replication-\d+(?:_.+)?\.pth$")
+        for f in files:
+            match = regex.search(os.path.basename(f))
+            if match:
+                model_name = match.group(1)
+                model_dict[model_name] = f
+        return model_dict
+
+    def load_model_from_path(self, model_name, model_path):
+        print(f"📥 Carregando modelo {model_name} de {model_path}")
+        try:
+            model = self.create_model(model_name)
+            state_dict = torch.load(model_path, map_location=self.device)
+            model.load_state_dict(state_dict)
+            model.to(self.device)
+            model.eval()
+            print(f"✅ Modelo {model_name} carregado com sucesso!")
+            return model
+        except Exception as e:
+            print(f"❌ Erro ao carregar modelo {model_name}: {e}")
+            return None
+
+    def evaluate_all_replications(self, max_replications=10, models_dir="./trained_models", output_prefix="trained_models_evaluation"):
+        """
+        Avalia todos os modelos para cada replicação encontrada.
+        """
+        for replication in range(1, max_replications+1):
+            model_paths = self.find_models_by_replication(replication, models_dir)
+            if not model_paths:
+                print(f"⚠️ Nenhum modelo encontrado para Replication-{replication}")
+                continue
+
+            print(f"\n🚀 Avaliando Replication-{replication} ({len(model_paths)} modelos)")
+            model_metrics = {}
+            all_image_results = None
+
+            for model_name, model_path in model_paths.items():
+                model = self.load_model_from_path(model_name, model_path)
+                if model is None:
+                    continue
+                metrics = self.evaluate_single_model(model, model_name)
+                model_metrics[model_name] = metrics
+                image_results = self.get_predictions_per_image(model, model_name)
+                if all_image_results is None:
+                    all_image_results = pd.DataFrame(image_results)
+                else:
+                    model_df = pd.DataFrame(image_results)
+                    all_image_results[f'{model_name}_correct'] = model_df[f'{model_name}_correct']
+
+            if all_image_results is not None:
+                output_file = f"{output_prefix}_Replication-{replication}.csv"
+                all_image_results.to_csv(output_file, index=False, sep=';')
+                print(f"\n💾 Resultados salvos em: {output_file}")
+                summary_file = output_file.replace('.csv', '_summary.csv')
+                self._create_summary_report(model_metrics, all_image_results, summary_file)
+                self._print_final_statistics(all_image_results, model_metrics)
+
+        print("\n🏁 Avaliação de todas as replicações concluída!")
