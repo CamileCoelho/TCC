@@ -4,6 +4,7 @@ from models.cnn import CNN
 from config.preprocessing import pre_process_data
 from config.output import save_csv
 from config.params_loader import load_parameters
+from model_evaluation import ModelEvaluator
 
 
 if __name__ == '__main__':
@@ -30,19 +31,17 @@ if __name__ == '__main__':
         print("="*60)
         
         # Para avaliação, usa configuração básica (sem data augmentation)
-        cnn = pre_process_data()
+        cnn = pre_process_data()        
         
-        # Importa e cria avaliador de modelos
-        from model_evaluation import ModelEvaluator
+        # Config para o dataset de TESTE
+        # test_dataset = cnn.test_loader.dataset
+        # evaluator = ModelEvaluator(test_dataset, batch_size=8)       
         
+        # Config para o dataset de VALIDAÇÃO
         validation_dataset = cnn.validation_loader.dataset
         evaluator = ModelEvaluator(validation_dataset, batch_size=8)
-        
-        evaluator.evaluate_all_replications(
-            max_replications=10,
-            models_dir="./trained_models",
-            output_prefix="./results/trained_models_evaluation"
-        )
+         
+        evaluator.evaluate_all_models_with_da();    
         
         # Estatísticas finais
         total_time = time.time() - start_time
@@ -64,7 +63,6 @@ if __name__ == '__main__':
         print(f"   Early Stopping: Ativado (padrão)")
         print(f"   Salvar Modelo: {'Sim' if save_model else 'Não'}")
 
-        # Gera todas as combinações possíveis de parâmetros (incluindo data augmentation)
         combinations = list(itertools.product(model_names, epochs, learning_rates, weight_decays, da_configs))
         total_experiments = len(combinations) * replications
         

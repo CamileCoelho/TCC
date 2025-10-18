@@ -41,6 +41,7 @@ class CNN:
         
         actual_epochs = self.train_model(model, self.train_loader, optimizerSGD, criterionCEL, num_epochs, model_name, save_model, replication, da_name) 
 
+        # metrics = self.evaluate_model(model, self.test_loader)
         metrics = self.evaluate_model(model, self.validation_loader)
 
         metrics['actual_epochs'] = actual_epochs
@@ -139,6 +140,7 @@ class CNN:
             train_loss = self.train_epoch(model, train_loader, optimizer, criterion)
             
             # Avalia no conjunto de validação
+            # val_metrics = self.evaluate_model(model, self.test_loader)
             val_metrics = self.evaluate_model(model, self.validation_loader)
             val_loss = val_metrics['loss']
             val_acc = val_metrics['accuracy']
@@ -202,3 +204,34 @@ class CNN:
             "fbeta": fbeta,
             "loss": avg_loss
         }
+    
+    def evaluate_all_trained_models(self, trained_models_dir):
+        results = []
+        pth_files = [f for f in os.listdir(trained_models_dir) if f.endswith('.pth')]
+        pattern = r'(?P<model>.+)_Replication-(?P<rep>\d+)_(?P<da>.+)\.pth'
+
+        for pth_file in pth_files:
+            match = re.match(pattern, pth_file)
+            if not match:
+                print(f"Arquivo ignorado (padrão não reconhecido): {pth_file}")
+                continue
+
+            model_name = match.group('model')
+            replication = int(match.group('rep'))
+            da_name = match.group('da')
+
+            print(f"Avaliando: Modelo={model_name}, Replicação={replication}, DA={da_name}")
+
+            model = self.create_model(model_name)
+            model_path = os.path.join(trained_models_dir, pth_file)
+            model.load_state_dict(torch.load(model_path, map_location=self.device))
+            model.to(self.device)
+
+            metrics = self.evaluate_model(model, self.test_loader)
+            metrics['model_name'] = model_name
+            metrics['replication'] = replication
+            metrics['da_name'] = da_name
+
+            results.append(metrics)
+
+        return results
