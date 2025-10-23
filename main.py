@@ -22,7 +22,8 @@ if __name__ == '__main__':
     save_model = params['save_model']
     use_trained_model = params.get('use_trained_model', False)
     da_configs = params['data_augmentation_configs']
-    
+    thresholds = params.get('thresholds', [0.5])
+
     # Verifica se deve usar modelos treinados ou treinar novos
     if use_trained_model:
         print(f"🔄 MODO: Avaliação de modelos treinados")
@@ -39,11 +40,14 @@ if __name__ == '__main__':
         
         # Config para o dataset de VALIDAÇÃO
         validation_dataset = cnn.validation_loader.dataset
-        evaluator = ModelEvaluator(validation_dataset, batch_size=8)
-         
-        evaluator.evaluate_all_models_with_da();    
         
-        # Estatísticas finais
+        print(f"\n--- Avaliando com threshold ---")
+        evaluator = ModelEvaluator(validation_dataset, batch_size=8)
+        evaluator.evaluate_all_models_with_da_multiple_thresholds(
+            thresholds=thresholds,
+            output_prefix="./results/trained_models_evaluation"
+        )
+
         total_time = time.time() - start_time
         print(f"\n{'='*50}")
         print(f"🏁 Avaliação de modelos treinados concluída!")

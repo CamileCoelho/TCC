@@ -139,7 +139,7 @@ class ModelEvaluator:
             print(f"❌ Erro ao carregar modelo {model_name}: {e}")
             return None
 
-    def evaluate_single_model(self, model, model_name):
+    def evaluate_single_model(self, model, model_name, threshold=0.5):
         validation_loader = DataLoader(
             self.validation_data, 
             batch_size=self.batch_size, 
@@ -163,8 +163,14 @@ class ModelEvaluator:
                 outputs = model(X)
                 loss = criterion(outputs, y)
                 total_loss += loss.item()
-                _, predicted = torch.max(outputs, 1)
-                y_pred.extend(predicted.cpu().numpy())
+                # Se for binário, aplique threshold
+                if outputs.shape[1] == 1:
+                    probs = torch.sigmoid(outputs).cpu().numpy().flatten()
+                    predicted = (probs >= threshold).astype(int)
+                else:
+                    probs = torch.softmax(outputs, dim=1)[:, 1].cpu().numpy()
+                    predicted = (probs >= threshold).astype(int)
+                y_pred.extend(predicted)
                 y_true.extend(y.cpu().numpy())
 
         from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, fbeta_score
@@ -414,9 +420,10 @@ class ModelEvaluator:
 
         print("\n🏁 Avaliação de todas as replicações concluída!")
 
-    def evaluate_all_models_with_da(self, models_dir="./trained_models", output_prefix="./results/trained_models_evaluation"):
+    def evaluate_all_models_with_da(self, models_dir="./trained_models", output_prefix="./results/trained_models_evaluation", threshold=0.5):
         """
         Avalia todos os modelos .pth na pasta, considerando modelo, replicação e técnica de DA.
+        Permite passar threshold para métricas binárias.
         """
         pattern = os.path.join(models_dir, "*.pth")
         files = glob.glob(pattern)
@@ -453,6 +460,7 @@ class ModelEvaluator:
 
         for (replication, da_technique), models in grouped.items():
             print(f"\n🚀 Avaliando Replication-{replication} | DA: {da_technique} ({len(models)} modelos)")
+
             model_metrics = {}
             all_image_results = None
 
@@ -460,7 +468,7 @@ class ModelEvaluator:
                 model = self.load_model_from_path(info["model_name"], info["path"])
                 if model is None:
                     continue
-                metrics = self.evaluate_single_model(model, info["model_name"])
+                metrics = self.evaluate_single_model(model, info["model_name"], threshold=threshold)
                 model_metrics[info["model_name"]] = metrics
                 image_results = self.get_predictions_per_image(model, info["model_name"])
                 for r in image_results:
@@ -489,3 +497,84 @@ class ModelEvaluator:
                 self._print_final_statistics(all_image_results, model_metrics)
 
         print("\n🏁 Avaliação de todos os modelos concluída!")
+
+    def evaluate_all_models_with_da_multiple_thresholds(
+        self, models_dir="./trained_models", output_prefix="./results/trained_models_evaluation", thresholds=[0.5]
+    ):
+        """
+        Avalia todos os modelos .pth na pasta para uma lista de thresholds.
+        Salva um arquivo de resultados para cada threshold.
+        """
+        pattern = os.path.join(models_dir, "*.pth")
+        files = glob.glob(pattern)
+        if not files:
+            print(f"Nenhum modelo encontrado em {models_dir}")
+            return
+
+        regex = re.compile(r"(.+)_Replication-(\d+)(?:_(.+))?\.pth$")
+        model_info_list = []
+        for f in files:
+            fname = os.path.basename(f)
+            match = regex.match(fname)
+            if match:
+                model_name = match.group(1)
+                replication = match.group(2)
+                da_technique = match.group(3) if match.group(3) else "None"
+                model_info_list.append({
+                    "model_name": model_name,
+                    "replication": replication,
+                    "da_technique": da_technique,
+                    "path": f
+                })
+
+        if not model_info_list:
+            print("Nenhum modelo válido encontrado.")
+            return
+
+        from collections import defaultdict
+        grouped = defaultdict(list)
+        for info in model_info_list:
+            key = (info["replication"], info["da_technique"])
+            grouped[key].append(info)
+
+        for threshold in thresholds:
+            print(f"\n=== Avaliando todos os modelos com threshold={threshold} ===")
+            for (replication, da_technique), models in grouped.items():
+                print(f"\n🚀 Replication-{replication} | DA: {da_technique} ({len(models)} modelos) | Threshold: {threshold}")
+
+                model_metrics = {}
+                all_image_results = None
+
+                for info in models:
+                    model = self.load_model_from_path(info["model_name"], info["path"])
+                    if model is None:
+                        continue
+                    metrics = self.evaluate_single_model(model, info["model_name"], threshold=threshold)
+                    model_metrics[info["model_name"]] = metrics
+                    image_results = self.get_predictions_per_image(model, info["model_name"])
+                    for r in image_results:
+                        r["Replication"] = replication
+                        r["DA_Technique"] = da_technique
+                    model_df = pd.DataFrame(image_results)
+                    if all_image_results is None:
+                        all_image_results = model_df
+                    else:
+                        col_name = f'{info["model_name"]}_correct'
+                        if col_name not in all_image_results.columns:
+                            all_image_results[col_name] = model_df[col_name]
+
+                if all_image_results is not None:
+                    output_file = f"{output_prefix}_threshold_{threshold}_Replication-{replication}_{da_technique}.csv"
+                    if os.path.exists(output_file):
+                        existing_df = pd.read_csv(output_file, sep=';')
+                        for col in all_image_results.columns:
+                            if col not in existing_df.columns:
+                                existing_df[col] = all_image_results[col]
+                        all_image_results = existing_df
+                    all_image_results.to_csv(output_file, index=False, sep=';')
+                    print(f"\n💾 Resultados salvos em: {output_file}")
+                    summary_file = output_file.replace('.csv', '_summary.csv')
+                    self._create_summary_report(model_metrics, all_image_results, summary_file)
+                    self._print_final_statistics(all_image_results, model_metrics)
+
+        print("\n🏁 Avaliação de todos os modelos concluída para todos os thresholds!")

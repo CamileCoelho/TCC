@@ -32,6 +32,8 @@ def load_parameters(filename):
                             config_dict['_original_string'] = config_str.strip()
                             configs.append(config_dict)
                         params[key] = configs
+                elif key == 'thresholds':
+                    params[key] = [float(v) for v in value.split(',')]
                 else:
                     params[key] = value
     
