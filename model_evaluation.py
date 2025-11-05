@@ -163,23 +163,20 @@ class ModelEvaluator:
                 outputs = model(X)
                 loss = criterion(outputs, y)
                 total_loss += loss.item()
-                # Se for binário, aplique threshold
-                if outputs.shape[1] == 1:
-                    probs = torch.sigmoid(outputs).cpu().numpy().flatten()
-                    predicted = (probs >= threshold).astype(int)
-                else:
-                    probs = torch.softmax(outputs, dim=1)[:, 1].cpu().numpy()
-                    predicted = (probs >= threshold).astype(int)
+               
+                probs = torch.softmax(outputs, dim=1)[:, 1].cpu().numpy()
+                predicted = (probs >= threshold).astype(int)
+
                 y_pred.extend(predicted)
                 y_true.extend(y.cpu().numpy())
-
+        
         from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, fbeta_score
 
         accuracy = accuracy_score(y_true, y_pred)
-        precision = precision_score(y_true, y_pred, average='weighted', zero_division=0)
-        recall = recall_score(y_true, y_pred, average='weighted', zero_division=0)
-        f1 = f1_score(y_true, y_pred, average='weighted', zero_division=0)
-        fbeta = fbeta_score(y_true, y_pred, beta=0.5, average='weighted', zero_division=0)
+        precision = precision_score(y_true, y_pred, pos_label=1, zero_division=0)
+        recall = recall_score(y_true, y_pred, pos_label=1, zero_division=0)
+        f1 = f1_score(y_true, y_pred, pos_label=1, zero_division=0)
+        fbeta = fbeta_score(y_true, y_pred, beta=0.5, pos_label=1, zero_division=0)
         avg_loss = total_loss / len(validation_loader)
         metrics = {
             'accuracy': accuracy,
