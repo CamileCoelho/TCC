@@ -191,7 +191,7 @@ class ModelEvaluator:
 
         return metrics
 
-    def get_predictions_per_image(self, model, model_name):
+    def get_predictions_per_image(self, model, model_name, threshold=0.5):
         validation_loader = DataLoader(
             self.validation_data, 
             batch_size=1,
@@ -209,7 +209,8 @@ class ModelEvaluator:
                 y = y.to(self.device)
 
                 outputs = model(X)
-                _, predicted = torch.max(outputs, 1)
+                probs = torch.softmax(outputs, dim=1)[:, 1]
+                predicted = (probs >= threshold).long()
 
                 true_label = y.cpu().numpy()[0]
                 pred_label = predicted.cpu().numpy()[0]
@@ -548,7 +549,7 @@ class ModelEvaluator:
                         continue
                     metrics = self.evaluate_single_model(model, info["model_name"], threshold=threshold)
                     model_metrics[info["model_name"]] = metrics
-                    image_results = self.get_predictions_per_image(model, info["model_name"])
+                    image_results = self.get_predictions_per_image(model, info["model_name"], threshold=threshold)
                     for r in image_results:
                         r["Replication"] = replication
                         r["DA_Technique"] = da_technique
